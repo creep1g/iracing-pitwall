@@ -81,6 +81,7 @@ function App() {
   const pendingTel = useRef<TelemetrySnapshot | null>(null)
   const rafScheduled = useRef(false)
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSave = useRef<StoredLayout | null>(null)
   const clientRef = useRef<WsClient | null>(null)
 
   useEffect(() => {
@@ -197,11 +198,37 @@ function App() {
   function handleLayoutChange(newLayout: readonly LayoutItem[]) {
     setStored((prev) => {
       const next = { ...prev, layout: [...newLayout] }
+      pendingSave.current = next
       if (saveTimeout.current) clearTimeout(saveTimeout.current)
-      saveTimeout.current = setTimeout(() => saveLayout(next), 200)
+      saveTimeout.current = setTimeout(() => {
+        saveLayout(next)
+        pendingSave.current = null
+      }, 200)
       return next
     })
   }
+
+  // Debounced drag/resize saves (above) can still be pending when the tab
+  // closes — the bridge shuts down as soon as the last tab disconnects, which
+  // races the 200ms timer. Flush synchronously on the earliest reliable
+  // signal that the page is going away.
+  useEffect(() => {
+    function flushPendingSave() {
+      if (pendingSave.current) {
+        saveLayout(pendingSave.current)
+        pendingSave.current = null
+      }
+    }
+    function onVisibilityChange() {
+      if (document.visibilityState === 'hidden') flushPendingSave()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('pagehide', flushPendingSave)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('pagehide', flushPendingSave)
+    }
+  }, [])
 
   function handleRemove(id: string) {
     setStored((prev) => {
