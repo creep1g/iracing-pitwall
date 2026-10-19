@@ -1,0 +1,39 @@
+/*
+ * Fallbacks for old WebKit (iOS 9 / Safari 9). Import LAST so these win at
+ * equal specificity. Everything here is gated so modern browsers ignore it.
+ */
+
+/* ── Inline `style={{ gap }}` (see legacy/jsx-runtime.ts) ──────────────── */
+.no-flex-gap .fgap-row > * + * { margin-left: var(--fg-c); }
+.no-flex-gap .fgap-col > * + * { margin-top: var(--fg-r); }
+.no-flex-gap .fgap-wrap > * { margin: 0 var(--fg-c) var(--fg-r) 0; }
+
+/* ── CSS Grid → flexbox/float (Safari < 10.1) ──────────────────────────── */
+@supports not (display: grid) {
+  /* 64px | 1fr | 36px */
+  .bar { display: flex; align-items: center; }
+  .bar > :first-child { width: 64px; flex: none; }
+  .bar > :nth-child(2) { flex: 1 1 auto; min-width: 0; margin: 0 8px; }
+  .bar > :last-child { width: 36px; flex: none; }
+
+  /* key/value <dl>: dt floats left at a fixed column, dd fills the rest */
+  .kv { display: block; overflow: hidden; }
+  .kv dt { float: left; clear: left; width: 42%; margin: 0 16px 4px 0; }
+  .kv dd { overflow: hidden; margin: 0 0 4px 0; }
+
+  /* 24px | 32px | 1fr | auto */
+  .settings-col-row { display: flex; align-items: center; }
+  .settings-col-row > :nth-child(1) { width: 24px; flex: none; margin-right: 6px; }
+  .settings-col-row > :nth-child(2) { width: 32px; flex: none; margin-right: 6px; }
+  .settings-col-row > :nth-child(3) { flex: 1 1 auto; min-width: 0; margin-right: 6px; }
+  .settings-col-row > :nth-child(4) { flex: none; }
+
+  /* repeat(auto-fit, minmax(130px, 1fr)), gap 8px */
+  .elec-bento-grid { display: flex; flex-wrap: wrap; margin: -4px; }
+  .elec-bento-grid > * { flex: 1 1 130px; min-width: 0; margin: 4px; }
+
+  /* 1fr 1fr, gap 8px */
+  .tire-bento-grid { display: flex; flex-wrap: wrap; }
+  .tire-bento-grid > * { width: calc(50% - 4px); box-sizing: border-box; margin: 0 0 8px 0; }
+  .tire-bento-grid > :nth-child(odd) { margin-right: 8px; }
+}
