@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import legacy from '@vitejs/plugin-legacy'
 import { fileURLToPath } from 'node:url'
 import flexGapFallback from './tools/postcss-flex-gap.mjs'
+import legacyPostprocess from './tools/legacy-postprocess.mjs'
 
 const legacyRuntime = (name: 'jsx-runtime' | 'jsx-dev-runtime') =>
   fileURLToPath(new URL(`./src/legacy/${name}.ts`, import.meta.url))
@@ -46,6 +47,7 @@ export default defineConfig({
       targets: ['safari >= 9', 'ios >= 9', 'defaults'],
       modernPolyfills: false,
     }),
+    legacyPostprocess(),
   ],
   resolve: {
     alias: {

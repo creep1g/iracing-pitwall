@@ -5,6 +5,29 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>iRacing Pitwall</title>
+    <!-- Plain ES3/5 on purpose: shows startup failures on old browsers (iOS 9) instead of a black screen. -->
+    <script>
+      (function () {
+        function show(msg) {
+          var d = document, b = d.body || d.documentElement, p = d.getElementById('boot-error');
+          if (!p) {
+            p = d.createElement('pre'); p.id = 'boot-error';
+            p.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;margin:0;padding:12px;background:#300;color:#fcc;font:12px/1.4 monospace;white-space:pre-wrap;word-wrap:break-word';
+            b.appendChild(p);
+          }
+          p.appendChild(d.createTextNode(msg + '\n'));
+        }
+        window.onerror = function (m, src, line, col) {
+          show('JS error: ' + m + ' (' + String(src).split('/').pop() + ':' + line + ':' + col + ')');
+        };
+        window.addEventListener('load', function () {
+          setTimeout(function () {
+            var r = document.getElementById('root');
+            if (r && !r.firstChild) show('App did not start (no JS error caught). UA: ' + navigator.userAgent);
+          }, 4000);
+        });
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Roboto+Condensed:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
